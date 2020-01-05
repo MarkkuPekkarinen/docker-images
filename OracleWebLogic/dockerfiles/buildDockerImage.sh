@@ -1,34 +1,34 @@
 #!/bin/bash
-# 
+#
 # Since: October, 2014
 # Author: bruno.borges@oracle.com
 # Description: script to build a Docker image for WebLogic
-# 
-# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-# 
-# Copyright (c) 2014-2015 Oracle and/or its affiliates. All rights reserved.
-# 
+#
+#Copyright (c) 2014-2018 Oracle and/or its affiliates. All rights reserved.
+#
+#Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+#
 
 usage() {
 cat << EOF
 
-Usage: buildDockerImage.sh -v [version] [-d | -g | -i] [-s] [-c]
+Usage: buildDockerImage.sh -v [version] [-d | -g | -m ] [-s] [-c]
 Builds a Docker Image for Oracle WebLogic.
-  
+
 Parameters:
    -v: version to build. Required.
        Choose one of: $(for i in $(ls -d */); do echo -n "${i%%/}  "; done)
    -d: creates image based on 'developer' distribution
    -g: creates image based on 'generic' distribution
-   -i: creates image based on 'infrastructure' distribution
+   -m: creates image based on 'slim' distribution
    -c: enables Docker image layer cache during build
    -s: skips the MD5 check of packages
 
-* select one distribution only: -d, -g, or -i
+* select one distribution only: -d, -g, or -m
 
-LICENSE CDDL 1.0 + GPL 2.0
+LICENSE UPL 1.0
 
-Copyright (c) 2014-2015 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2014-2019 Oracle and/or its affiliates. All rights reserved.
 
 EOF
 exit 0
@@ -50,11 +50,11 @@ if [ "$#" -eq 0 ]; then usage; fi
 # Parameters
 DEVELOPER=0
 GENERIC=0
-INFRASTRUCTURE=0
-VERSION="12.2.1"
+SLIM=0
+VERSION="12.2.1.4"
 SKIPMD5=0
 NOCACHE=true
-while getopts "hcsdgiv:" optname; do
+while getopts "hcsdgmiv:" optname; do
   case "$optname" in
     "h")
       usage
@@ -68,8 +68,8 @@ while getopts "hcsdgiv:" optname; do
     "g")
       GENERIC=1
       ;;
-    "i")
-      INFRASTRUCTURE=1
+    "m")
+      SLIM=1
       ;;
     "v")
       VERSION="$OPTARG"
@@ -85,17 +85,17 @@ while getopts "hcsdgiv:" optname; do
 done
 
 # Which distribution to use?
-if [ $((DEVELOPER + GENERIC + INFRASTRUCTURE)) -gt 1 ]; then
+if [ $((DEVELOPER + GENERIC + SLIM)) -gt 1 ]; then
   usage
 elif [ $DEVELOPER -eq 1 ]; then
   DISTRIBUTION="developer"
 elif [ $GENERIC -eq 1 ]; then
   DISTRIBUTION="generic"
-elif [ $INFRASTRUCTURE -eq 1 ] && [ "$VERSION" = "12.1.3" ]; then
-  echo "Version 12.1.3 does not have infrastructure distribution available."
-  exit 1
+elif [ $SLIM -eq 1 ]; then
+  DISTRIBUTION="slim"
 else
-  DISTRIBUTION="infrastructure"
+  echo "Invalid distribution, please elect one distribution only: -d, -m, or -g"
+  exit 1
 fi
 
 # WebLogic Image Name
@@ -152,8 +152,8 @@ echo ""
 
 if [ $? -eq 0 ]; then
 cat << EOF
-  WebLogic Docker Image for '$DISTRIBUTION' version $VERSION is ready to be extended: 
-    
+  WebLogic Docker Image for '$DISTRIBUTION' version $VERSION is ready to be extended:
+
     --> $IMAGE_NAME
 
   Build completed in $BUILD_ELAPSED seconds.
@@ -162,4 +162,3 @@ EOF
 else
   echo "WebLogic Docker Image was NOT successfully created. Check the output and correct any reported problems with the docker build operation."
 fi
-

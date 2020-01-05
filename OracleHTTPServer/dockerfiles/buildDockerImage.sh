@@ -1,14 +1,16 @@
 #!/bin/bash
 #
-# Since: March, 2016
-# Author: hemastuti.baruah@oracle.com
+# Since: May, 2017
+# Author: prabhat.kishore@oracle.com
 # Description: script to build a Docker image for Oracle HTTP Server. The install mode is "standalone" i.e. OHS is not managed by or registered to an Oracle WebLogic Server domain
 #
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2016-2017 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016-2019 Oracle and/or its affiliates. All rights reserved.
 #
+#
+#Licensed under the Universal Permissive License v 1.0 as shown at http://oss.oracle.com/licenses/upl.
 #
 usage() {
 cat << EOF
@@ -17,12 +19,12 @@ Usage: buildDockerImage.sh -v [version] [-s]
 Builds a Docker Image for Oracle HTTP Server (standalone) .
 
 Parameters:
-   -v: Release version to build. Required. E.g 12.2.1
+   -v: Release version to build. Required. E.g 12.2.1.3.0
    -s: skips the MD5 check of packages
 
-LICENSE CDDL 1.0 + GPL 2.0
+LICENSE Universal Permissive License v1.0
 
-Copyright (c) 2016-2017: Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2016-2019: Oracle and/or its affiliates. All rights reserved.
 
 
 EOF
@@ -43,7 +45,7 @@ checksumPackages() {
 
 
 #Parameters
-VERSION="12.2.1"
+VERSION="12.2.1.3.0"
 SKIPMD5=0
 while getopts "hsdgiv:" optname; do
   case "$optname" in
@@ -64,7 +66,7 @@ while getopts "hsdgiv:" optname; do
 done
 
 # OHS Image Name
-IMAGE_NAME="oracle/ohs:$VERSION-sa"
+IMAGE_NAME="oracle/ohs:$VERSION"
 
 cd $VERSION
 
@@ -114,7 +116,7 @@ echo ""
 
 if [ $? -eq 0 ]; then
 cat << EOF
-  OHS Standalone Docker Image for version: $VERSION is ready to be extended.
+  OHS Standalone Docker Image for version: $VERSION is ready to be used.
 
     --> $IMAGE_NAME
 
