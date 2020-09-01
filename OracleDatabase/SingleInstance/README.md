@@ -4,17 +4,18 @@ Sample Docker build files to facilitate installation, configuration, and environ
 ## How to build and run
 This project offers sample Dockerfiles for:
  * Oracle Database 19c (19.3.0) Enterprise Edition and Standard Edition 2
+ * Oracle Database 18c (18.4.0) Express Edition (XE)
  * Oracle Database 18c (18.3.0) Enterprise Edition and Standard Edition 2
  * Oracle Database 12c Release 2 (12.2.0.2) Enterprise Edition and Standard Edition 2
  * Oracle Database 12c Release 1 (12.1.0.2) Enterprise Edition and Standard Edition 2
- * Oracle Database 11g Release 2 (11.2.0.2) Express Edition.
+ * Oracle Database 11g Release 2 (11.2.0.2) Express Edition (XE)
 
 To assist in building the images, you can use the [buildDockerImage.sh](dockerfiles/buildDockerImage.sh) script. See below for instructions and usage.
 
 The `buildDockerImage.sh` script is just a utility shell script that performs MD5 checks and is an easy way for beginners to get started. Expert users are welcome to directly call `docker build` with their prefered set of parameters.
 
 ### Building Oracle Database Docker Install Images
-**IMPORTANT:** You will have to provide the installation binaries of Oracle Database and put them into the `dockerfiles/<version>` folder. You only need to provide the binaries for the edition you are going to install. The binaries can be downloaded from the [Oracle Technology Network](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html), make sure you use the linux link: *Linux x86-64*. The needed file is named *linuxx64_<version>_database.zip*. You also have to make sure to have internet connectivity for yum. Note that you must not uncompress the binaries. The script will handle that for you and fail if you uncompress them manually!
+**IMPORTANT:** You will have to provide the installation binaries of Oracle Database (except for Oracle Database 18c XE) and put them into the `dockerfiles/<version>` folder. You only need to provide the binaries for the edition you are going to install. The binaries can be downloaded from the [Oracle Technology Network](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html), make sure you use the linux link: *Linux x86-64*. The needed file is named *linuxx64_<version>_database.zip*. You also have to make sure to have internet connectivity for yum. Note that you must not uncompress the binaries. The script will handle that for you and fail if you uncompress them manually!
 
 Before you build the image make sure that you have provided the installation binaries and put them into the right folder. Once you have chosen which edition and version you want to build an image of, go into the **dockerfiles** folder and run the **buildDockerImage.sh** script:
 
@@ -58,6 +59,7 @@ To run your Oracle Database Docker image use the **docker run** command as follo
 	-e ORACLE_SID=<your SID> \
 	-e ORACLE_PDB=<your PDB name> \
 	-e ORACLE_PWD=<your database passwords> \
+	-e ORACLE_EDITION=<your database edition> \
 	-e ORACLE_CHARACTERSET=<your character set> \
 	-v [<host mount point>:]/opt/oracle/oradata \
 	oracle/database:19.3.0-ee
@@ -69,6 +71,9 @@ To run your Oracle Database Docker image use the **docker run** command as follo
 	   -e ORACLE_SID: The Oracle Database SID that should be used (default: ORCLCDB)
 	   -e ORACLE_PDB: The Oracle Database PDB name that should be used (default: ORCLPDB1)
 	   -e ORACLE_PWD: The Oracle Database SYS, SYSTEM and PDB_ADMIN password (default: auto generated)
+	   -e ORACLE_EDITION:
+	                  The Oracle Database Edition (enterprise/standard).
+	                  Supported 19.3 onwards.
 	   -e ORACLE_CHARACTERSET:
 	                  The character set to use when creating the database (default: AL32UTF8)
 	   -v /opt/oracle/oradata
@@ -93,6 +98,14 @@ The Oracle Database inside the container also has Oracle Enterprise Manager Expr
 	https://localhost:5500/em/
 
 **NOTE**: Oracle Database bypasses file system level caching for some of the files by using the `O_DIRECT` flag. It is not advised to run the container on a file system that does not support the `O_DIRECT` flag.
+
+#### Selecting the Edition (Supported from 19.3.0 release)
+
+The edition of the database can be changed during runtime by passing the ORACLE_EDITION parameter to the docker run command. Therefore, an enterprise docker image can be used to run standard edition database and vice-versa. You can find the edition of the running database in the output line:
+
+    ORACLE EDITION:
+
+This parameter modifies the software home binaries but it doesn't have any effect on the datafiles. So, if existing datafiles are reused to bring up the database, the same ORACLE_EDITION must be passed as the one used to create the datafiles for the first time.
 
 #### Changing the admin accounts passwords
 
